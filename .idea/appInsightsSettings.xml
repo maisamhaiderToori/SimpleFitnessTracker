@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.simplefitnesstracker" />
+                  <option name="mobileSdkAppId" value="1:70345779841:android:83302b2e54c34dc739bb80" />
+                  <option name="projectId" value="junia-simple-fitness-app" />
+                  <option name="projectNumber" value="70345779841" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

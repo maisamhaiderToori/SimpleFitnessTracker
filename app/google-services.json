@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "70345779841",
+    "project_id": "junia-simple-fitness-app",
+    "storage_bucket": "junia-simple-fitness-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70345779841:android:83302b2e54c34dc739bb80",
+        "android_client_info": {
+          "package_name": "com.example.simplefitnesstracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTQFkPx5rbIy1ly94-Aaf5fKCVbpqez5Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SimpleFitnessTracker</string>
+    <string name="authentication">Authentication</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign up</string>
+    <string name="email">Email</string>
+    <string name="abs_gmail_com">abs@gmail.com</string>
+    <string name="password">Password</string>
 </resources>
