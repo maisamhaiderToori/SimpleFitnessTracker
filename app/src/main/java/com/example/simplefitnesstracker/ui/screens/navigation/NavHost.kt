@@ -14,12 +14,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.simplefitnesstracker.ui.screens.authenticationscreen.SignUpScreen
+import com.example.simplefitnesstracker.ui.screens.authenticationscreen.SignUpInScreen
+import com.example.simplefitnesstracker.ui.screens.exercisedetailscreen.ExerciseDetailScreen
+import com.example.simplefitnesstracker.ui.screens.exercisedetailscreen.ExerciseDetailScreenViewModel
 import com.example.simplefitnesstracker.ui.screens.homescreen.HomeScreen
 import com.example.simplefitnesstracker.ui.screens.navigation.Graph.NAV_GRAPH
 import com.example.simplefitnesstracker.ui.screens.navigation.Screens.ExerciseDetail
 import com.example.simplefitnesstracker.ui.screens.navigation.Screens.Home
-import com.example.simplefitnesstracker.ui.screens.navigation.Screens.SignUp
+import com.example.simplefitnesstracker.ui.screens.navigation.Screens.SignUpIn
 
 @Composable
 fun MainNavHost(
@@ -27,16 +29,17 @@ fun MainNavHost(
     modifier: Modifier = Modifier,
 ) {
     val navHostVM: MainNavHostViewModel = hiltViewModel()
+    val exerciseDetailScreenViewModel: ExerciseDetailScreenViewModel = hiltViewModel()
+
     val currentUser = navHostVM.auth.currentUser
     val context = LocalContext.current
     val uiState = navHostVM.state.collectAsState()
-    val startDestination = if (currentUser != null) Home.route else SignUp.route
 
 //    val categoriesVM: CategoriesViewModel = hiltViewModel()
     Column(modifier = modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = startDestination,
+            startDestination = SignUpIn.route,
             route = NAV_GRAPH,
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
@@ -44,42 +47,56 @@ fun MainNavHost(
                 .fillMaxHeight(0.9f)
         ) {
 
-            composable(route = SignUp.route) {
-                SignUpScreen()
+            composable(route = SignUpIn.route) {
+                if (currentUser != null) {
+                    navController.popBackStack()
+                    navController.navigate(Home.route)
+                } else {
+                    SignUpInScreen {
+                        navController.popBackStack()
+                        navController.navigate(Home.route)
+                    }
+                }
+
             }
 
             composable(route = Home.route) {
-                HomeScreen()
+                HomeScreen {
+                    exerciseDetailScreenViewModel.apply {
+                        setId(it.id)
+                        setName(it.name)
+                        setDescription(it.description)
+                        setStatus(it.status)
+                        setDuration(it.duration)
+                        setDate(it.date)
+                    }
+                    navController.navigate(ExerciseDetail.route)
+                }
             }
 
 
             composable(route = ExerciseDetail.route) {
+                ExerciseDetailScreen(exerciseDetailScreenViewModel,
+                    deleteWorkoutPlan = {
+                        exerciseDetailScreenViewModel.deleteWorkoutPlan(
+                            it
+                        ) {
+                            navController.popBackStack()
+                        }
+                    },
+                    onBack = { navController.popBackStack() }
+                )
             }
 
 
         }
     }
-    when (uiState.value) {
-        SignUp -> {
-            navController.navigate(SignUp.route)
-        }
-
-        Home -> {
-            navController.navigate(Home.route)
-        }
-
-        ExerciseDetail -> {
-            navController.navigate(ExerciseDetail.route)
-        }
-
-    }
-
 
 }
 
 sealed class Screens(val route: String) {
-    object SignUp : Screens("SignUp")
-    object Home : Screens("home")
+    object SignUpIn : Screens("SignUp")
+    object Home : Screens("Home")
     object ExerciseDetail : Screens("ExerciseDetail")
 }
 

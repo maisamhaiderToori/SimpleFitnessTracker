@@ -31,5 +31,5 @@ class MainNavHostViewModel @Inject constructor(
 }
 
 data class MainNavHostState(
-    val currentScreens: Screens = Screens.SignUp,
+    val currentScreens: Screens = Screens.SignUpIn,
 )

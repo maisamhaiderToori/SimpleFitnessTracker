@@ -6,4 +6,14 @@
     <string name="email">Email</string>
     <string name="abs_gmail_com">abs@gmail.com</string>
     <string name="password">Password</string>
+    <string name="password_must_be_at_least_8_characters">Password must be at least 8 characters</string>
+    <string name="please_enter_a_valid_credentials">Please enter a valid credentials</string>
+    <string name="email_and_password_cannot_be_empty">Email and password cannot be empty</string>
+    <string name="please_enter_a_valid_email">Please enter a valid email</string>
+    <string name="signed_up_successfully">signed up successfully</string>
+    <string name="signed_in_successfully">signed in successfully</string>
+    <string name="pending">Pending</string>
+    <string name="done">Done</string>
+    <string name="in_progress">In Progress</string>
+    <string name="unknown">Unknown</string>
 </resources>

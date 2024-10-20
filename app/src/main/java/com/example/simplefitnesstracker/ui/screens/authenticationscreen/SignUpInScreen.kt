@@ -4,12 +4,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -25,33 +28,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.simplefitnesstracker.R
+import com.example.simplefitnesstracker.data.local.constant.DEFAULT_EXERCISES
 
 
 @Composable
-fun SignUpScreen(
-    authVM: SignUpViewModel = hiltViewModel()
+fun SignUpInScreen(
+    vM: SignUpInViewModel = hiltViewModel(),
+    onSuccessfulAuth: () -> Unit
 ) {
     val context = LocalContext.current
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
-    val signUpState = authVM.signUpState.collectAsState()
-
+    val state = vM.state.collectAsState()
     Column(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .scrollable(
+                state = rememberScrollState(),
+                orientation = Orientation.Vertical,
+                enabled = true
+            ),
     ) {
-        val state = authVM.state.collectAsState()
         Text(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 30.dp),
             text = stringResource(
-                if (state.value.userExitedButLoggedOut) R.string.login else R.string.sign_up
+                R.string.authentication
             ), fontSize = MaterialTheme.typography.headlineLarge.fontSize
         )
 
@@ -65,7 +75,7 @@ fun SignUpScreen(
         )
         Text(
             modifier = Modifier
-                .padding(top = 20.dp, start = 10.dp, bottom = 10.dp),
+                .padding(top = 15.dp, start = 10.dp, bottom = 10.dp),
             text = stringResource(R.string.email), fontSize = TextStyle.Default.fontSize
         )
         /**
@@ -83,10 +93,11 @@ fun SignUpScreen(
                 emailState.value = it
             },
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
-            keyboardActions = KeyboardActions(onDone = {
+            keyboardActions = KeyboardActions(onNext = {
                 Log.i("AuthenticationScreen", "inputEmail: KeyboardActions")
             }),
-            maxLines = 1
+            maxLines = 1,
+            singleLine = true
 
         )
         Text(
@@ -106,25 +117,42 @@ fun SignUpScreen(
                 .fillMaxWidth(1f)
                 .padding(horizontal = 10.dp),
 
-
             onValueChange = {
-                if (passwordState.value.length in 0..20) {
+                if (it.length <= 30) {
                     passwordState.value = it
-                } else {
-                    passwordState.value = passwordState.value.substring(0, 19)
                 }
             },
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
-            keyboardActions = KeyboardActions(onDone = {
-                Log.i("AuthenticationScreen", "passwordState: KeyboardActions")
+            keyboardActions = KeyboardActions(onGo = {
+                if (passwordState.value.length >= 8) {
+                    Log.i("AuthenticationScreen", "Password is valid: ${passwordState.value}")
+
+                } else {
+
+                    Toast.makeText(
+                        context,
+                        "Password too short. Must be at least 8 characters.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Handle too short password case, e.g., show error message
+                }
             }),
             maxLines = 1,
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation()
+        )
+        Text(
+            modifier = Modifier
+                .padding(top = 10.dp, start = 10.dp, bottom = 10.dp),
+            text = stringResource(R.string.password_must_be_at_least_8_characters),
+            fontSize = 10.sp
+        )
 
-            )
 
         Button(
             onClick = {
-                authVM.createUserWithEmailAndPassword(
+                vM.signupUserWithEmailAndPassword(
                     emailState.value,
                     passwordState.value
                 )
@@ -132,26 +160,45 @@ fun SignUpScreen(
                 .padding(start = 10.dp, end = 10.dp, top = 32.dp)
                 .height(60.dp)
                 .fillMaxWidth(1f)
+
         ) {
-            Text(text = stringResource(if (state.value.userExitedButLoggedOut) R.string.login else R.string.sign_up))
+            Text(text = stringResource(R.string.sign_up))
         }
+        Button(
+            onClick = {
+                vM.signInWithEmailAndPassword(
+                    emailState.value,
+                    passwordState.value
+                )
+            }, modifier = Modifier
+                .padding(start = 10.dp, end = 10.dp, top = 10.dp)
+                .height(60.dp)
+                .fillMaxWidth(1f)
+
+        ) {
+            Text(text = stringResource(R.string.login))
+        }
+
         // Observing the sign-up result and updating UI
-        when (val state = signUpState.value) {
-            is SignUpState.Success -> {
-                Text(text = "User signed up successfully: ${state.user?.email}")
+        when (val state = state.value.signUpInState) {
+            is SignUpInState.Success -> {
+                if (state.isSignUp) {
+                    vM.uploadWorkoutPlan(exercises = DEFAULT_EXERCISES)
+                }
+
+                vM.changeSignUpState(SignUpInState.Idle)
+                onSuccessfulAuth()
             }
 
-            is SignUpState.Failure -> {
+            is SignUpInState.Failure -> {
                 Toast.makeText(context, "Authentication failed: ${state.error}", Toast.LENGTH_SHORT)
                     .show()
-                authVM.changeSignUpState(SignUpState.Idle)
+                vM.changeSignUpState(SignUpInState.Idle)
             }
 
-            is SignUpState.Loading -> {
-                Text(text = "Signing up...")
-            }
+            is SignUpInState.Loading -> {}
 
-            is SignUpState.Idle -> {
+            is SignUpInState.Idle -> {
                 // No action yet
             }
         }
@@ -162,5 +209,5 @@ fun SignUpScreen(
 @Preview(showBackground = true)
 @Composable
 fun AuthenticationScreenPreview() {
-    SignUpScreen()
+    SignUpInScreen() {}
 }
